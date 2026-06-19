@@ -1,0 +1,93 @@
+# ArgoCD Application for DEV environment
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitops-demo-dev
+  namespace: argocd
+  annotations:
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: gitops-alerts
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: gitops-alerts
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR_USERNAME/gitops-k8s-project
+    targetRevision: HEAD
+    path: k8s/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated:
+      prune: true        # Auto-delete removed resources
+      selfHeal: true     # Auto-fix manual changes (GitOps!)
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+---
+# ArgoCD Application for STAGING environment
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitops-demo-staging
+  namespace: argocd
+  annotations:
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: gitops-alerts
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: gitops-alerts
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR_USERNAME/gitops-k8s-project
+    targetRevision: HEAD
+    path: k8s/overlays/staging
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 5m
+---
+# ArgoCD Application for PROD environment
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: gitops-demo-prod
+  namespace: argocd
+  annotations:
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: gitops-alerts
+    notifications.argoproj.io/subscribe.on-sync-failed.slack: gitops-alerts
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR_USERNAME/gitops-k8s-project
+    targetRevision: HEAD
+    path: k8s/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prod
+  syncPolicy:
+    automated:
+      prune: false       # PROD: manual prune for safety
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 10m
