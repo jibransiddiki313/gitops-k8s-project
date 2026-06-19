@@ -140,7 +140,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Notify Failure
-        if:  ${{ needs.update-manifests.result == 'failure' && secrets.SLACK_WEBHOOK_URL != '' }}
+        if: ${{ needs.update-manifests.result == 'failure' && secrets.SLACK_WEBHOOK_URL != '' }}
         uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
